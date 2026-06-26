@@ -1,0 +1,55 @@
+# .github/workflows/recap.yml
+# Runs the gold & silver recap mailer free on GitHub's servers.
+#
+# SETUP:
+#  1. Put recap.py, requirements.txt, and this file (at .github/workflows/recap.yml)
+#     in a GitHub repo.
+#  2. Repo > Settings > Secrets and variables > Actions > add these secrets:
+#       ANTHROPIC_API_KEY, GMAIL_ADDRESS, GMAIL_APP_PASSWORD, RECIPIENT
+#  3. That's it. It runs automatically on the schedule below. Use the
+#     "Run workflow" button (Actions tab) to test it manually any time.
+#
+# NOTES:
+#  - Cron times are UTC. The two below are tuned for US Eastern DAYLIGHT time
+#    (EDT, UTC-4). In winter (EST, UTC-5) they fire one hour earlier in ET;
+#    bump each hour by +1 if you want to hold the ET time year-round.
+#  - GitHub may delay scheduled runs a few minutes under load — fine for this.
+#  - Scheduled workflows only run from the repo's DEFAULT branch, and GitHub
+#    pauses schedules after ~60 days of no repo activity (a commit re-enables).
+
+name: Gold & Silver Recap
+
+on:
+  schedule:
+    - cron: "30 12 * * 1-5"   # ~08:30 ET  -> OPEN edition (weekdays)
+    - cron: "0 21 * * 1-5"    # ~17:00 ET  -> CLOSE edition (weekdays)
+  workflow_dispatch:           # manual "Run workflow" button
+    inputs:
+      edition:
+        description: "Edition to send on a manual run"
+        type: choice
+        options: [OPEN, CLOSE]
+        default: CLOSE
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Send recap
+        env:
+          ANTHROPIC_API_KEY:  ${{ secrets.ANTHROPIC_API_KEY }}
+          GMAIL_ADDRESS:      ${{ secrets.GMAIL_ADDRESS }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          RECIPIENT:          ${{ secrets.RECIPIENT }}
+          # Map which cron fired -> which edition. Manual runs use the input.
+          EDITION: ${{ github.event.schedule == '30 12 * * 1-5' && 'OPEN' || github.event.schedule == '0 21 * * 1-5' && 'CLOSE' || inputs.edition }}
+        run: python recap.py
