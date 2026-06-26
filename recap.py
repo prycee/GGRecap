@@ -65,20 +65,22 @@ def write_recap(edition: str, gold: float, silver: float) -> str:
 
     if edition == "OPEN":
         brief = (
-            "This is the MARKET OPEN edition (pre-bell, forward-looking). "
-            "Cover overnight price action, the main catalyst driving metals, one "
-            "live geopolitical thread, and what to watch today including key "
-            "support and resistance levels for gold."
+            "This is the MORNING edition, sent before markets open. "
+            "Cover: how gold and silver moved overnight, the single biggest "
+            "reason why, one world event that's affecting them right now, and "
+            "what to keep an eye on today. If you mention a price level for gold, "
+            "say plainly what it would mean if the price crossed it."
         )
-        closer = "what to watch today"
+        closer = "what to keep an eye on today"
     else:
         brief = (
-            "This is the MARKET CLOSE edition (after the bell, recap + forecast). "
-            "Cover how gold and silver finished, the decisive driver today, the "
-            "longer-term backdrop (central-bank buying, major bank targets), and a "
-            "forecast for the next session with key levels for gold and silver."
+            "This is the EVENING edition, sent after markets close. "
+            "Cover: where gold and silver ended up, the main reason they moved "
+            "that way, a quick note on the bigger picture (like whether countries' "
+            "central banks are still buying gold), and what might happen tomorrow. "
+            "If you mention a price level, say plainly what crossing it would signal."
         )
-        closer = "the forecast for the next session"
+        closer = "what might happen in the next session"
 
     prompt = f"""You are writing a daily precious-metals email recap for {today}.
 
@@ -93,12 +95,18 @@ Use web search to find TODAY'S real market drivers: the Fed, the US dollar,
 inflation data, oil prices, and any live geopolitical events moving gold and silver.
 
 Write ONLY the email body. Requirements:
-- 150-200 words, tight and punchy, readable aloud in about 75 seconds.
-- Order: prices first, then why they moved, then the geopolitical/macro thread,
-  then {closer}.
+- 150-200 words, readable aloud in about 75 seconds.
+- Write like you're explaining the day to a smart friend who doesn't follow
+  markets. Clear, calm, and friendly — not hype, not jargon, no trader slang.
+- Use plain words. If you must use a market term (like "the Fed" or "inflation"),
+  add a few words explaining what it means or why it matters, in everyday language.
+- Short sentences. No buzzwords like "catalyst," "headwind," "print," "bid,"
+  "hawkish/dovish," or "basis points." Say what those mean in normal English instead.
+- Order: start with the prices and whether they're up or down, then the main
+  reason why, then the one world event that matters, then {closer}.
 - Plain text only. No markdown, no headers, no bullet symbols, no URLs or citations.
 - Do not invent figures beyond the prices/ratio above and what you find in search.
-  If something is uncertain, keep it qualitative rather than guessing a number.
+  If something is uncertain, describe it in words rather than guessing a number.
 """
 
     resp = client.messages.create(
